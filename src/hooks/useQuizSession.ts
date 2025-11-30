@@ -37,7 +37,7 @@ export function useQuizSession({ cards, mode, onUpdateStats }: UseQuizSessionPro
   }, [currentCard, cards, mode]);
 
   const handleAnswer = useCallback(
-    (answer: string, isCorrect: boolean) => {
+    (isCorrect: boolean) => {
       // Update stats
       onUpdateStats(currentCard.id, isCorrect);
 

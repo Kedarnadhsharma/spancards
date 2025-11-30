@@ -130,7 +130,7 @@ function QuizFillPage() {
     if (!userAnswer.trim() || showFeedback) return;
 
     const isCorrect = checkAnswer(userAnswer, currentCard.english);
-    handleAnswer(userAnswer, isCorrect);
+    handleAnswer(isCorrect);
   };
 
   return (

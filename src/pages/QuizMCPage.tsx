@@ -126,7 +126,7 @@ function QuizMCPage() {
   const handleOptionClick = (option: string) => {
     if (showFeedback) return; // Don't allow answer changes during feedback
     const isCorrect = option === currentCard.english;
-    handleAnswer(option, isCorrect);
+    handleAnswer(isCorrect);
   };
 
   return (
