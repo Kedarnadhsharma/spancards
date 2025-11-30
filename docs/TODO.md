@@ -126,7 +126,7 @@ Acceptance Criteria
  No type errors when accessing state.
 
 Phase 3 – Basic Study (Flashcards) Mode
-[ ] 7. Implement Decks / Home Page UI
+[x] 7. Implement Decks / Home Page UI
 
 Tasks
 
@@ -144,7 +144,7 @@ Acceptance Criteria
 
  If a deck has no cards, show an empty-state message.
 
-[ ] 8. Implement Basic Flashcard Display (Front Only)
+[x] 8. Implement Basic Flashcard Display (Front Only)
 
 Tasks
 
@@ -164,7 +164,7 @@ Acceptance Criteria
 
  When there are no more cards, show a completion message (e.g., “Session complete”).
 
-[ ] 9. Implement Card Flipping (Spanish → English)
+[x] 9. Implement Card Flipping (Spanish → English)
 
 Tasks
 
@@ -188,7 +188,7 @@ Acceptance Criteria
 
  Flipping state resets appropriately when moving to the next card.
 
-[ ] 10. Add “I got it right” / “I got it wrong” Buttons
+[x] 10. Add "I got it right" / "I got it wrong" Buttons
 
 Tasks
 
