@@ -1,0 +1,28 @@
+.quiz-mc-page {
+  text-align: center;
+}
+
+.quiz-mc-page h1 {
+  font-size: 2rem;
+  color: #2d3748;
+  margin-bottom: 1rem;
+}
+
+.deck-info {
+  color: #718096;
+  margin-bottom: 2rem;
+}
+
+.placeholder-message {
+  background-color: #f7fafc;
+  border: 2px dashed #cbd5e0;
+  border-radius: 8px;
+  padding: 3rem 2rem;
+  margin-top: 2rem;
+}
+
+.placeholder-message p {
+  color: #718096;
+  font-size: 1.1rem;
+}
+
