@@ -20,24 +20,26 @@ describe('Layout', () => {
   it('displays navigation links', () => {
     renderLayout();
     
-    const homeLink = screen.getByRole('link', { name: /home/i });
-    const statsLink = screen.getByRole('link', { name: /stats/i });
+    const homeLink = screen.getByRole('link', { name: /go to home page/i });
+    const statsLink = screen.getByRole('link', { name: /view statistics/i });
+    const settingsLink = screen.getByRole('link', { name: /open settings/i });
     
     expect(homeLink).toBeInTheDocument();
     expect(statsLink).toBeInTheDocument();
+    expect(settingsLink).toBeInTheDocument();
   });
 
   it('home link has correct href', () => {
     renderLayout();
     
-    const homeLink = screen.getByRole('link', { name: /home/i });
+    const homeLink = screen.getByRole('link', { name: /go to home page/i });
     expect(homeLink).toHaveAttribute('href', '/');
   });
 
   it('stats link has correct href', () => {
     renderLayout();
     
-    const statsLink = screen.getByRole('link', { name: /stats/i });
+    const statsLink = screen.getByRole('link', { name: /view statistics/i });
     expect(statsLink).toHaveAttribute('href', '/stats');
   });
 

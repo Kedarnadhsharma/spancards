@@ -209,7 +209,7 @@ Acceptance Criteria
  No visual glitches when rapidly clicking between cards.
 
 Phase 4 – Tracking Performance & Wrong Cards
-[ ] 11. Implement Card Stats Update Logic
+[x] 11. Implement Card Stats Update Logic
 
 Tasks
 
@@ -231,7 +231,7 @@ Acceptance Criteria
 
  lastStudiedAt is updated each time the card is answered.
 
-[ ] 12. Track “Wrong” Cards Within a Session
+[x] 12. Track "Wrong" Cards Within a Session
 
 Tasks
 
@@ -247,7 +247,7 @@ Acceptance Criteria
 
  If no cards were marked wrong, the “wrong cards” list is empty or undefined.
 
-[ ] 13. Implement Session Summary Screen
+[x] 13. Implement Session Summary Screen
 
 Tasks
 
@@ -267,7 +267,7 @@ Acceptance Criteria
 
  Summary includes a button to return to deck list or start a new session.
 
-[ ] 14. Implement “Redo Only Cards I Got Wrong” (Session-Based)
+[x] 14. Implement "Redo Only Cards I Got Wrong" (Session-Based)
 
 Tasks
 
@@ -292,7 +292,7 @@ Acceptance Criteria
  If the user gets them all correct in the redo, summary reflects that.
 
 Phase 5 – Persistence with Local Storage
-[ ] 15. Persist AppState to Local Storage
+[x] 15. Persist AppState to Local Storage
 
 Tasks
 
@@ -308,7 +308,7 @@ Acceptance Criteria
 
  No runtime errors if localStorage is not available (graceful fallback).
 
-[ ] 16. Hydrate State from Local Storage on App Load
+[x] 16. Hydrate State from Local Storage on App Load
 
 Tasks
 
@@ -329,7 +329,7 @@ Acceptance Criteria
  The app does not duplicate or conflict between seed data and stored data.
 
 Phase 6 – Quiz / Test Modes
-[ ] 17. Implement Quiz Mode Selection UI
+[x] 17. Implement Quiz Mode Selection UI
 
 Tasks
 
@@ -353,7 +353,7 @@ Acceptance Criteria
 
  Unknown deck ID results in an error or redirect message (not a crash).
 
-[ ] 18. Implement Multiple-Choice Quiz Logic
+[x] 18. Implement Multiple-Choice Quiz Logic
 
 Tasks
 
@@ -389,7 +389,7 @@ Acceptance Criteria
 
  Completion summary displays total, correct, incorrect, and accuracy.
 
-[ ] 19. Implement Fill-in-the-Blank Quiz Logic
+[x] 19. Implement Fill-in-the-Blank Quiz Logic
 
 Tasks
 
@@ -426,7 +426,7 @@ Acceptance Criteria
  Stats and summary screen reflect user performance.
 
 Phase 7 – Statistics Page
-[ ] 20. Implement Global Statistics Summary
+[x] 20. Implement Global Statistics Summary
 
 Tasks
 
@@ -446,7 +446,7 @@ Acceptance Criteria
 
  Accuracy is calculated as correct / (correct + incorrect) and formatted nicely (e.g. 73%).
 
-[ ] 21. Implement Per-Deck Statistics
+[x] 21. Implement Per-Deck Statistics
 
 Tasks
 
@@ -468,7 +468,7 @@ Acceptance Criteria
 
  Decks with no activity display a clear “No data yet” or 0% state.
 
-[ ] 22. Show “Difficult Cards” Overview
+[x] 22. Show "Difficult Cards" Overview
 
 Tasks
 
@@ -489,7 +489,7 @@ Acceptance Criteria
  If implementing “Review Difficult Cards,” clicking it launches a valid study session on those cards.
 
 Phase 8 – Polish, UX and Edge Cases (Harder / Longer-Term)
-[ ] 23. Responsive Layout & Mobile UX Improvements
+[x] 23. Responsive Layout & Mobile UX Improvements
 
 Tasks
 
@@ -507,7 +507,7 @@ Acceptance Criteria
 
  Card text remains readable without needing to zoom.
 
-[ ] 24. Accessibility Improvements
+[x] 24. Accessibility Improvements
 
 Tasks
 
@@ -527,17 +527,17 @@ Acceptance Criteria
 
  Correct/incorrect feedback is also conveyed via text, not only color.
 
-[ ] 25. Data Reset / Settings
+[x] 25. Data Reset / Settings
 
 Tasks
 
-Add a Settings or small “Reset Data” option.
+Add a Settings or small "Reset Data" option.
 
 Confirm with user before full reset.
 
 Acceptance Criteria
 
- Clicking “Reset Data” after confirmation clears localStorage and reverts to seed data.
+ Clicking "Reset Data" after confirmation clears localStorage and reverts to seed data.
 
  App reloads cleanly after reset with no stale references.
 

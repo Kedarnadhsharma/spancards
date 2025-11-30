@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import { calculateCardStats, getStudiedCards } from '../utils/statistics';
+import { getDifficultCards, getDifficultyLevel } from '../utils/difficulty';
 import './StatsPage.css';
 
 function StatsPage() {
@@ -8,20 +10,9 @@ function StatsPage() {
 
   // Calculate global statistics
   const allCards = Object.values(appState.cards);
-  const totalCardsStudied = allCards.filter(
-    (card) => card.stats.correctCount > 0 || card.stats.incorrectCount > 0
-  ).length;
-  const totalCorrect = allCards.reduce(
-    (sum, card) => sum + card.stats.correctCount,
-    0
-  );
-  const totalIncorrect = allCards.reduce(
-    (sum, card) => sum + card.stats.incorrectCount,
-    0
-  );
-  const totalAttempts = totalCorrect + totalIncorrect;
-  const overallAccuracy =
-    totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
+  const totalCardsStudied = getStudiedCards(allCards).length;
+  const { correct: totalCorrect, incorrect: totalIncorrect, attempts: totalAttempts, accuracy: overallAccuracy } = 
+    calculateCardStats(allCards);
 
   return (
     <div className="stats-page">
@@ -66,19 +57,8 @@ function StatsPage() {
           <div className="deck-stats-grid">
             {decks.map((deck) => {
               const cards = getCardsByDeck(deck.id);
-              const deckCorrect = cards.reduce(
-                (sum, card) => sum + card.stats.correctCount,
-                0
-              );
-              const deckIncorrect = cards.reduce(
-                (sum, card) => sum + card.stats.incorrectCount,
-                0
-              );
-              const deckAttempts = deckCorrect + deckIncorrect;
-              const deckAccuracy =
-                deckAttempts > 0
-                  ? Math.round((deckCorrect / deckAttempts) * 100)
-                  : 0;
+              const { correct: deckCorrect, incorrect: deckIncorrect, attempts: deckAttempts, accuracy: deckAccuracy } = 
+                calculateCardStats(cards);
 
               return (
                 <div key={deck.id} className="deck-stat-card">
@@ -113,6 +93,62 @@ function StatsPage() {
             })}
           </div>
         )}
+      </div>
+
+      {/* Difficult Cards Section */}
+      <div className="difficult-cards-section">
+        <h2>Difficult Cards</h2>
+        {(() => {
+          const difficultCards = getDifficultCards(allCards);
+          
+          if (difficultCards.length === 0) {
+            return (
+              <p className="no-data">
+                {totalAttempts === 0
+                  ? 'Start studying to identify difficult cards.'
+                  : 'Great job! No difficult cards yet. Keep studying!'}
+              </p>
+            );
+          }
+
+          return (
+            <>
+              <p className="section-description">
+                Cards with accuracy below 60% ({difficultCards.length} card{difficultCards.length !== 1 ? 's' : ''})
+              </p>
+              <div className="difficult-cards-grid">
+                {difficultCards.slice(0, 10).map((card) => {
+                  const accuracy = Math.round(
+                    (card.stats.correctCount /
+                      (card.stats.correctCount + card.stats.incorrectCount)) *
+                      100
+                  );
+                  const difficulty = getDifficultyLevel(card);
+
+                  return (
+                    <div key={card.id} className={`difficult-card ${difficulty}`}>
+                      <div className="card-content">
+                        <p className="card-spanish">{card.spanish}</p>
+                        <p className="card-english">{card.english}</p>
+                      </div>
+                      <div className="card-stats">
+                        <span className="accuracy-badge">{accuracy}%</span>
+                        <span className="attempts">
+                          {card.stats.correctCount}✓ / {card.stats.incorrectCount}✗
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {difficultCards.length > 10 && (
+                <p className="more-cards">
+                  +{difficultCards.length - 10} more difficult card{difficultCards.length - 10 !== 1 ? 's' : ''}
+                </p>
+              )}
+            </>
+          );
+        })()}
       </div>
 
       {totalAttempts === 0 && (

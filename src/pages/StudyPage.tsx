@@ -1,31 +1,12 @@
-import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { Card } from '../types';
+import { useStudySession } from '../hooks/useStudySession';
+import { calculateAccuracy } from '../utils/statistics';
 import './StudyPage.css';
 
 function StudyPage() {
   const { deckId } = useParams<{ deckId: string }>();
   const { getDeck, getCardsByDeck, updateCardStats, addSession } = useAppContext();
-
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [sessionCards, setSessionCards] = useState<Card[]>([]);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [incorrectCount, setIncorrectCount] = useState(0);
-  const [wrongCardIds, setWrongCardIds] = useState<string[]>([]);
-  const [showSummary, setShowSummary] = useState(false);
-  const [sessionStartTime] = useState(new Date().toISOString());
-
-  // Initialize session cards (shuffled)
-  useEffect(() => {
-    if (deckId) {
-      const cards = getCardsByDeck(deckId);
-      // Shuffle cards for variety
-      const shuffled = [...cards].sort(() => Math.random() - 0.5);
-      setSessionCards(shuffled);
-    }
-  }, [deckId, getCardsByDeck]);
 
   if (!deckId) {
     return (
@@ -49,7 +30,9 @@ function StudyPage() {
     );
   }
 
-  if (sessionCards.length === 0) {
+  const cards = getCardsByDeck(deckId);
+
+  if (cards.length === 0) {
     return (
       <div className="study-page">
         <h1>{deck.name}</h1>
@@ -61,76 +44,46 @@ function StudyPage() {
     );
   }
 
-  const currentCard = sessionCards[currentCardIndex];
-  const isLastCard = currentCardIndex === sessionCards.length - 1;
-  const totalCards = sessionCards.length;
-  const cardNumber = currentCardIndex + 1;
-
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
-  };
+  const {
+    currentCard,
+    isFlipped,
+    correctCount,
+    incorrectCount,
+    wrongCardIds,
+    showSummary,
+    totalCards,
+    cardNumber,
+    handleFlip,
+    handleAnswer: handleSessionAnswer,
+    startNewSession,
+    redoWrongCards,
+  } = useStudySession({
+    deckId,
+    cards,
+    onSessionComplete: (session) => addSession(session),
+  });
 
   const handleAnswer = (correct: boolean) => {
-    // Update card statistics
+    if (!currentCard) return;
     updateCardStats(currentCard.id, correct);
-
-    // Update session statistics
-    if (correct) {
-      setCorrectCount(correctCount + 1);
-    } else {
-      setIncorrectCount(incorrectCount + 1);
-      setWrongCardIds([...wrongCardIds, currentCard.id]);
-    }
-
-    // Move to next card or show summary
-    if (isLastCard) {
-      // Session complete - record session and show summary
-      const session = {
-        id: `session-${Date.now()}`,
-        deckId: deckId,
-        startedAt: sessionStartTime,
-        endedAt: new Date().toISOString(),
-        totalCards: totalCards,
-        correct: correct ? correctCount + 1 : correctCount,
-        incorrect: correct ? incorrectCount : incorrectCount + 1,
-      };
-      addSession(session);
-      setShowSummary(true);
-    } else {
-      // Move to next card
-      setCurrentCardIndex(currentCardIndex + 1);
-      setIsFlipped(false);
-    }
+    handleSessionAnswer(correct);
   };
 
-  const handleRedoWrongCards = () => {
-    const wrongCards = sessionCards.filter(card => wrongCardIds.includes(card.id));
-    setSessionCards(wrongCards);
-    setCurrentCardIndex(0);
-    setIsFlipped(false);
-    setCorrectCount(0);
-    setIncorrectCount(0);
-    setWrongCardIds([]);
-    setShowSummary(false);
-  };
-
-  const handleStartNewSession = () => {
-    const cards = getCardsByDeck(deckId);
-    const shuffled = [...cards].sort(() => Math.random() - 0.5);
-    setSessionCards(shuffled);
-    setCurrentCardIndex(0);
-    setIsFlipped(false);
-    setCorrectCount(0);
-    setIncorrectCount(0);
-    setWrongCardIds([]);
-    setShowSummary(false);
-  };
+  // Guard: If no current card, show loading or return to prevent rendering errors
+  if (!currentCard && !showSummary) {
+    return (
+      <div className="study-page">
+        <h1>{deck.name}</h1>
+        <div className="empty-state">
+          <p>Loading cards...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Summary Screen
   if (showSummary) {
-    const accuracy = totalCards > 0 
-      ? Math.round((correctCount / totalCards) * 100) 
-      : 0;
+    const accuracy = calculateAccuracy(correctCount, incorrectCount);
 
     return (
       <div className="study-page">
@@ -157,11 +110,11 @@ function StudyPage() {
 
           <div className="summary-actions">
             {wrongCardIds.length > 0 && (
-              <button onClick={handleRedoWrongCards} className="btn btn-warning">
+              <button onClick={redoWrongCards} className="btn btn-warning">
                 Redo Only Cards I Got Wrong ({wrongCardIds.length})
               </button>
             )}
-            <button onClick={handleStartNewSession} className="btn btn-primary">
+            <button onClick={startNewSession} className="btn btn-primary">
               Start New Session
             </button>
             <Link to="/" className="btn btn-secondary">
@@ -173,14 +126,20 @@ function StudyPage() {
     );
   }
 
-  // Study Screen
+  // Study Screen (only if currentCard exists)
+  if (!currentCard) {
+    return null; // This shouldn't happen due to guard above, but TypeScript needs it
+  }
+
   return (
     <div className="study-page">
       <div className="study-header">
         <h1>{deck.name}</h1>
-        <div className="progress-info">
-          <span className="card-progress">Card {cardNumber} of {totalCards}</span>
-          <div className="progress-bar">
+        <div className="progress-info" role="status" aria-live="polite">
+          <span className="card-progress" aria-label={`Card ${cardNumber} of ${totalCards}`}>
+            Card {cardNumber} of {totalCards}
+          </span>
+          <div className="progress-bar" role="progressbar" aria-valuenow={cardNumber} aria-valuemin={1} aria-valuemax={totalCards} aria-label="Study progress">
             <div 
               className="progress-fill" 
               style={{ width: `${(cardNumber / totalCards) * 100}%` }}
@@ -193,22 +152,31 @@ function StudyPage() {
         <div 
           className={`flashcard ${isFlipped ? 'flipped' : ''}`}
           onClick={handleFlip}
+          role="button"
+          tabIndex={0}
+          aria-label={isFlipped ? `English translation: ${currentCard.english}` : `Spanish word: ${currentCard.spanish}. Press to flip card`}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleFlip();
+            }
+          }}
         >
           <div className="flashcard-content">
             {!isFlipped ? (
               <div className="card-front">
-                <span className="language-label">Spanish</span>
+                <span className="language-label" aria-label="Language: Spanish">Spanish</span>
                 <h2 className="card-text">{currentCard.spanish}</h2>
                 <p className="flip-hint">Click card to flip</p>
               </div>
             ) : (
               <div className="card-back">
-                <span className="language-label">English</span>
+                <span className="language-label" aria-label="Language: English">English</span>
                 <h2 className="card-text">{currentCard.english}</h2>
                 {currentCard.exampleSentenceSpanish && (
                   <div className="example-sentences">
-                    <p className="example-spanish">"{currentCard.exampleSentenceSpanish}"</p>
-                    <p className="example-english">"{currentCard.exampleSentenceEnglish}"</p>
+                    <p className="example-spanish" lang="es">"{currentCard.exampleSentenceSpanish}"</p>
+                    <p className="example-english" lang="en">"{currentCard.exampleSentenceEnglish}"</p>
                   </div>
                 )}
               </div>
@@ -217,31 +185,37 @@ function StudyPage() {
         </div>
 
         {!isFlipped ? (
-          <div className="card-actions">
-            <button onClick={handleFlip} className="btn btn-flip">
+          <div className="card-actions" role="group" aria-label="Card actions">
+            <button onClick={handleFlip} className="btn btn-flip" aria-label="Flip card to see English translation">
               Flip Card
             </button>
           </div>
         ) : (
-          <div className="card-actions">
+          <div className="card-actions" role="group" aria-label="Answer options">
             <button 
               onClick={() => handleAnswer(false)} 
               className="btn btn-wrong"
+              aria-label="Mark as incorrect"
             >
-              ✗ I got it wrong
+              <span aria-hidden="true">✗</span> I got it wrong
             </button>
             <button 
               onClick={() => handleAnswer(true)} 
               className="btn btn-correct"
+              aria-label="Mark as correct"
             >
-              ✓ I got it right
+              <span aria-hidden="true">✓</span> I got it right
             </button>
           </div>
         )}
 
-        <div className="session-stats-inline">
-          <span className="stat-inline correct">Correct: {correctCount}</span>
-          <span className="stat-inline incorrect">Incorrect: {incorrectCount}</span>
+        <div className="session-stats-inline" role="status" aria-live="polite" aria-label="Current session statistics">
+          <span className="stat-inline correct" aria-label={`Correct answers: ${correctCount}`}>
+            Correct: {correctCount}
+          </span>
+          <span className="stat-inline incorrect" aria-label={`Incorrect answers: ${incorrectCount}`}>
+            Incorrect: {incorrectCount}
+          </span>
         </div>
       </div>
     </div>

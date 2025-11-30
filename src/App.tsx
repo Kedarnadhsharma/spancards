@@ -7,6 +7,7 @@ import QuizPage from './pages/QuizPage';
 import QuizMCPage from './pages/QuizMCPage';
 import QuizFillPage from './pages/QuizFillPage';
 import StatsPage from './pages/StatsPage';
+import SettingsPage from './pages/SettingsPage';
 import './App.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <Route path="/quiz/:deckId/mc" element={<QuizMCPage />} />
             <Route path="/quiz/:deckId/fill" element={<QuizFillPage />} />
             <Route path="/stats" element={<StatsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </Layout>
       </BrowserRouter>

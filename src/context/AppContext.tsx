@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import { AppState, Card, Deck, StudySessionRecord } from '../types';
 import { initialAppState } from '../data/seedData';
+import { loadFromLocalStorage, saveToLocalStorage } from '../utils/localStorage';
 
 interface AppContextType {
   appState: AppState;
@@ -10,6 +11,7 @@ interface AppContextType {
   getAllDecks: () => Deck[];
   updateCardStats: (cardId: string, correct: boolean) => void;
   addSession: (session: StudySessionRecord) => void;
+  resetData: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -19,34 +21,52 @@ interface AppProviderProps {
 }
 
 export function AppProvider({ children }: AppProviderProps) {
-  const [appState, setAppState] = useState<AppState>(initialAppState);
+  // Initialize state from localStorage or use seed data
+  const [appState, setAppState] = useState<AppState>(() => {
+    const stored = loadFromLocalStorage();
+    return stored || initialAppState;
+  });
+
+  // Persist state to localStorage whenever it changes
+  useEffect(() => {
+    saveToLocalStorage(appState);
+  }, [appState]);
 
   // Helper function to get a card by ID
-  const getCard = (cardId: string): Card | undefined => {
-    return appState.cards[cardId];
-  };
+  const getCard = useCallback(
+    (cardId: string): Card | undefined => {
+      return appState.cards[cardId];
+    },
+    [appState.cards]
+  );
 
   // Helper function to get a deck by ID
-  const getDeck = (deckId: string): Deck | undefined => {
-    return appState.decks[deckId];
-  };
+  const getDeck = useCallback(
+    (deckId: string): Deck | undefined => {
+      return appState.decks[deckId];
+    },
+    [appState.decks]
+  );
 
   // Helper function to get all cards in a deck
-  const getCardsByDeck = (deckId: string): Card[] => {
-    const deck = appState.decks[deckId];
-    if (!deck) return [];
-    return deck.cardIds
-      .map((cardId) => appState.cards[cardId])
-      .filter((card): card is Card => card !== undefined);
-  };
+  const getCardsByDeck = useCallback(
+    (deckId: string): Card[] => {
+      const deck = appState.decks[deckId];
+      if (!deck) return [];
+      return deck.cardIds
+        .map((cardId) => appState.cards[cardId])
+        .filter((card): card is Card => card !== undefined);
+    },
+    [appState.decks, appState.cards]
+  );
 
   // Helper function to get all decks
-  const getAllDecks = (): Deck[] => {
+  const getAllDecks = useCallback((): Deck[] => {
     return Object.values(appState.decks);
-  };
+  }, [appState.decks]);
 
   // Update card statistics
-  const updateCardStats = (cardId: string, correct: boolean) => {
+  const updateCardStats = useCallback((cardId: string, correct: boolean) => {
     setAppState((prevState) => {
       const card = prevState.cards[cardId];
       if (!card) return prevState;
@@ -68,25 +88,34 @@ export function AppProvider({ children }: AppProviderProps) {
         },
       };
     });
-  };
+  }, []);
 
   // Add a study session record
-  const addSession = (session: StudySessionRecord) => {
+  const addSession = useCallback((session: StudySessionRecord) => {
     setAppState((prevState) => ({
       ...prevState,
       sessions: [...prevState.sessions, session],
     }));
-  };
+  }, []);
 
-  const contextValue: AppContextType = {
-    appState,
-    getCard,
-    getDeck,
-    getCardsByDeck,
-    getAllDecks,
-    updateCardStats,
-    addSession,
-  };
+  // Reset data to initial state
+  const resetData = useCallback(() => {
+    setAppState(initialAppState);
+  }, []);
+
+  const contextValue: AppContextType = useMemo(
+    () => ({
+      appState,
+      getCard,
+      getDeck,
+      getCardsByDeck,
+      getAllDecks,
+      updateCardStats,
+      addSession,
+      resetData,
+    }),
+    [appState, getCard, getDeck, getCardsByDeck, getAllDecks, updateCardStats, addSession, resetData]
+  );
 
   return (
     <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>

@@ -84,6 +84,10 @@
   transition: background-color 0.2s, transform 0.1s;
   border: none;
   cursor: pointer;
+  min-height: 44px; /* Minimum tap target for accessibility */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-primary {
